@@ -160,13 +160,6 @@ Key pages:
 - **Hosting** — Vercel (functions + cron), via the native Supabase
   integration. Also runs anywhere Node.js 20+ does.
 
-## Contributing
-
-This is a template, not a collaborative product — the expected flow is
-fork → customise → deploy, **not** upstream contribution. Feature PRs
-often belong in your fork rather than here. Details in
-[`CONTRIBUTING.md`](./CONTRIBUTING.md).
-
 ## License
 
 [MIT](./LICENSE). Fork it, brand it, host it.
