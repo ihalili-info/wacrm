@@ -94,9 +94,9 @@ export function ResponseTimeChart({
             data={chartData}
             index="day"
             categories={[CATEGORY]}
-            // 'violet' maps to Tailwind's `fill-violet-500` — matches
-            // the brand accent the hand-rolled bars used (#7c3aed).
-            colors={['violet']}
+            // 'brand' maps to `fill-primary` — follows the active
+            // accent theme (Balkania crimson-pink by default).
+            colors={['brand']}
             valueFormatter={(value) => `${value.toFixed(1)}m`}
             showLegend={false}
             yAxisWidth={48}

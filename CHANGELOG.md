@@ -18,6 +18,14 @@ tested-against path.
 
 ### Changed
 
+- **Rebranded to Balkania.** New default accent theme "Balkania"
+  (crimson-pink `#eb0045` primary, Balkania-navy chrome), default
+  colour mode is now **light**, and the type stack is **Syne**
+  (headings) + **Figtree** (body) to match balkania.ie. The five
+  previous accents (Violet, Emerald, Cobalt, Amber, Rose) stay
+  selectable in Settings → Appearance. Favicon and mobile theme-colour
+  are Balkania navy. Charts follow the active accent via a new `brand`
+  chart colour.
 - **Deploy docs are now Vercel-first.** New
   [`docs/deployment-vercel.md`](./docs/deployment-vercel.md) walks a
   fork to a running deployment (Supabase integration → env vars →

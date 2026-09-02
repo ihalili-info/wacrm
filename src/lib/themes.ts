@@ -14,6 +14,7 @@
  */
 
 export const THEME_IDS = [
+  "balkania",
   "violet",
   "emerald",
   "cobalt",
@@ -23,7 +24,7 @@ export const THEME_IDS = [
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
-export const DEFAULT_THEME: ThemeId = "violet";
+export const DEFAULT_THEME: ThemeId = "balkania";
 
 export const STORAGE_KEY = "wacrm.theme";
 
@@ -43,7 +44,7 @@ export const MODES = ["light", "dark"] as const;
 
 export type Mode = (typeof MODES)[number];
 
-export const DEFAULT_MODE: Mode = "dark";
+export const DEFAULT_MODE: Mode = "light";
 
 export const MODE_STORAGE_KEY = "wacrm.mode";
 
@@ -68,9 +69,15 @@ export interface ThemeMeta {
 
 export const THEMES: ReadonlyArray<ThemeMeta> = [
   {
+    id: "balkania",
+    name: "Balkania",
+    tagline: "House brand — Balkania navy with a crimson-pink accent.",
+    swatch: "oklch(0.596 0.238 18)",
+  },
+  {
     id: "violet",
     name: "Violet",
-    tagline: "The default — confident, slightly playful.",
+    tagline: "Confident, slightly playful.",
     swatch: "oklch(0.526 0.247 293)",
   },
   {

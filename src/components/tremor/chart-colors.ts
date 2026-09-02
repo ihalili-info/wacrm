@@ -68,6 +68,16 @@ export const chartColors = {
     fill: "fill-fuchsia-500",
     text: "text-fuchsia-500",
   },
+  // Local addition: follows the active accent theme (--primary) rather
+  // than a fixed Tailwind hue, so a chart's primary series stays
+  // on-brand when the accent changes. Opt in with colors={['brand']};
+  // appended last so it doesn't shift the default category order.
+  brand: {
+    bg: "bg-primary",
+    stroke: "stroke-primary",
+    fill: "fill-primary",
+    text: "text-primary",
+  },
 } as const satisfies {
   [color: string]: {
     [key in ColorUtility]: string

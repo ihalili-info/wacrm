@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
-import { Inter } from "next/font/google";
+import { Figtree, Syne } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/use-theme";
@@ -15,9 +15,19 @@ import {
   THEME_IDS,
 } from "@/lib/themes";
 
-const inter = Inter({
+// Balkania brand type: Figtree for body/UI, Syne for headings —
+// mirrors balkania.ie (--font-body / --font-display).
+const figtree = Figtree({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const syne = Syne({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -41,8 +51,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#020617",
-  colorScheme: "dark light",
+  themeColor: "#001a70", // Balkania navy
+  colorScheme: "light dark",
 };
 
 // Inline boot script — runs before React hydrates so the user's
@@ -90,7 +100,7 @@ export default async function RootLayout({
       lang={locale}
       data-theme={DEFAULT_THEME}
       data-mode={DEFAULT_MODE}
-      className={`${inter.variable} h-full antialiased`}
+      className={`${figtree.variable} ${syne.variable} h-full antialiased`}
       // The `theme-boot` script below rewrites `data-theme` and
       // `data-mode` on <html> from localStorage before React hydrates,
       // so for any non-default choice the client DOM intentionally
