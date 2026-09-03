@@ -4,21 +4,13 @@
 > sales pipelines, broadcasts, and no-code automations. Fork it, brand
 > it, host it.
 
-<p align="center">
-  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FArnasDon%2Fwacrm&project-name=wacrm&repository-name=wacrm&env=ENCRYPTION_KEY,META_APP_SECRET,CRON_SECRET&envDescription=Token%20encryption%20key%2C%20Meta%20app%20secret%2C%20and%20a%20cron%20secret.%20Add%20the%20Supabase%20integration%20in%20the%20same%20flow%20for%20the%20database%20vars.&envLink=https%3A%2F%2Fgithub.com%2FArnasDon%2Fwacrm%2Fblob%2Fmain%2F.env.local.example">
-    <img src="https://vercel.com/button" alt="Deploy with Vercel" height="36">
-  </a>
-</p>
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](./LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ecf8e?logo=supabase)](https://supabase.com)
 [![Deployed on Vercel](https://img.shields.io/badge/Vercel-ready-000?logo=vercel)](./docs/deployment-vercel.md)
-[![Stars](https://img.shields.io/github/stars/ArnasDon/wacrm?style=social)](https://github.com/ArnasDon/wacrm/stargazers)
 
-The marketing site and self-host docs live in a separate repo:
-This repo is the product —
-clone or fork it to run your own CRM.
+Clone or fork this repo to run your own CRM. Self-host docs are in
+[`docs/`](./docs).
 
 ## What you get out of the box
 
@@ -80,8 +72,7 @@ in an afternoon and make yours.
 ## Quick start
 
 ```bash
-# Fork on GitHub first: https://github.com/ArnasDon/wacrm → Fork
-git clone https://github.com/<your-username>/wacrm.git
+git clone https://github.com/<your-org>/wacrm.git
 cd wacrm
 npm install
 cp .env.local.example .env.local   # fill in Supabase + Meta creds
@@ -93,16 +84,11 @@ Open <http://localhost:3000>. You'll be redirected to `/login` (or
 
 ## 🚀 Deploy on Vercel (recommended)
 
-<p align="center">
-  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FArnasDon%2Fwacrm&project-name=wacrm&repository-name=wacrm&env=ENCRYPTION_KEY,META_APP_SECRET,CRON_SECRET&envDescription=Token%20encryption%20key%2C%20Meta%20app%20secret%2C%20and%20a%20cron%20secret.%20Add%20the%20Supabase%20integration%20in%20the%20same%20flow%20for%20the%20database%20vars.&envLink=https%3A%2F%2Fgithub.com%2FArnasDon%2Fwacrm%2Fblob%2Fmain%2F.env.local.example">
-    <img src="https://vercel.com/button" alt="Deploy with Vercel" height="40">
-  </a>
-</p>
-
 **wacrm runs on [Vercel](https://vercel.com) with a
-[Supabase](https://supabase.com) database.** It's the path we test,
-document, and recommend — push to `main` and Vercel builds and ships
-it, no VPS and no Kubernetes cluster to own.
+[Supabase](https://supabase.com) database.** Push your fork to a
+GitHub account that has the Vercel app installed, import it as a new
+project, and Vercel builds and ships it on every push to `main` — no
+VPS and no Kubernetes cluster to own.
 
 ### Why Vercel + Supabase?
 
@@ -118,8 +104,7 @@ it, no VPS and no Kubernetes cluster to own.
 
 ### The 2-minute version
 
-1. Click **Deploy with Vercel** above (or **New Project → Import** your
-   own fork).
+1. In Vercel, **New Project → Import** your fork.
 2. In the import flow, add the **Supabase** integration — pick an
    existing project or let it create one. The Supabase env vars are
    set for you.
@@ -137,19 +122,16 @@ Full walkthrough: **[docs/deployment-vercel.md](./docs/deployment-vercel.md)**.
 
 ## Documentation
 
-Full self-host documentation — Supabase migrations, WhatsApp Business
-API config, and production deploy — lives at
-**[wacrm.tech/docs](https://wacrm.tech/docs)**
-(source: [ArnasDon/wacrm-site](https://github.com/ArnasDon/wacrm-site)).
+Self-host docs live in [`docs/`](./docs):
 
-Key pages:
-- [Getting started](https://wacrm.tech/docs/getting-started)
-- [Supabase setup](https://wacrm.tech/docs/supabase-setup)
-- [WhatsApp setup](https://wacrm.tech/docs/whatsapp-setup)
-- [Environment variables](https://wacrm.tech/docs/environment-variables)
 - [Deploy on Vercel](./docs/deployment-vercel.md)
-- [Architecture](https://wacrm.tech/docs/architecture)
-- [Troubleshooting](https://wacrm.tech/docs/troubleshooting)
+- [Automations & scheduled jobs](./docs/automations-and-cron.md)
+- [Public REST API](./docs/public-api.md)
+- [MCP server](./docs/mcp.md)
+
+Environment variables are documented inline in
+[`.env.local.example`](./.env.local.example); database migrations are
+in [`supabase/migrations/`](./supabase/migrations).
 
 ## Stack
 

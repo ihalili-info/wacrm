@@ -62,16 +62,16 @@ import {
 //
 //   When `ALLOWED_INVITE_HOSTS` is set (comma-separated hostnames),
 //   we validate the derived host against the list. Anything not
-//   on the list falls through to the wacrm.tech fallback with a
-//   loud console.warn. Operators who care about this attack
+//   on the list falls through to the last-resort fallback below
+//   with a loud console.warn. Operators who care about this attack
 //   surface should set this to their canonical hostnames; everyone
 //   else gets today's permissive behavior.
 //
-// Previous implementation hard-defaulted to `https://wacrm.tech`
-// (the docs/marketing site, a different repo). Forks that didn't
-// set `NEXT_PUBLIC_SITE_URL` got invite links pointing at the
-// marketing site, which 404s on `/join/<token>`. This resolution
-// chain removes the foot-gun.
+// Last resort (no trusted host at all): Vercel's
+// `VERCEL_PROJECT_PRODUCTION_URL` if present, otherwise the origin
+// the server itself received the request on. Never a hard-coded
+// third-party domain — always set `NEXT_PUBLIC_SITE_URL` in
+// production so this path is dead code.
 function parseAllowedHosts(): readonly string[] | null {
   const raw = process.env.ALLOWED_INVITE_HOSTS?.trim();
   if (!raw) return null;
@@ -127,10 +127,13 @@ function getBaseUrl(request: Request): string {
     );
   } else {
     console.warn(
-      "[POST /api/account/invitations] could not derive base URL from request; falling back to marketing domain",
+      "[POST /api/account/invitations] could not derive a trusted base URL from the request; set NEXT_PUBLIC_SITE_URL",
     );
   }
-  return "https://wacrm.tech";
+
+  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercelHost) return `https://${vercelHost}`;
+  return new URL(request.url).origin;
 }
 
 const MAX_LABEL_LEN = 80;
