@@ -41,9 +41,8 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
-  icons: {
-    icon: [{ url: "/icon" }],
-  },
+  // Favicon comes from the `src/app/icon.png` file convention — Next
+  // generates the <link rel="icon"> automatically, no `icons` entry.
   formatDetection: {
     email: false,
     address: false,

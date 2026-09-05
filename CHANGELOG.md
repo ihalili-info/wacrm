@@ -21,6 +21,9 @@ tested-against path.
 - **Renamed to "Balkania WA CRM"** — sidebar wordmark, browser tab
   title (`%s — Balkania WA CRM`), `applicationName`, meta description,
   README, and the npm package name (`balkania-wa-crm`).
+- **Balkania logo mark** replaces the generic chat-square icon in the
+  sidebar and on the login card, and is the favicon (`src/app/icon.png`
+  file convention; the old generated `icon.tsx` is removed).
 - **Self-service signup is disabled; accounts are provisioned by an
   admin.** Supabase Auth has "Allow new users to sign up" turned off,
   and the app follows suit: `/signup` redirects to `/login` (via
