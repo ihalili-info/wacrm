@@ -32,10 +32,11 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   title: {
-    default: "wacrm",
-    template: "%s — wacrm",
+    default: "Balkania WA CRM",
+    template: "%s — Balkania WA CRM",
   },
-  description: "Self-hostable CRM template for WhatsApp.",
+  applicationName: "Balkania WA CRM",
+  description: "WhatsApp CRM — shared inbox, contacts, pipelines, broadcasts and automations.",
   robots: {
     index: false,
     follow: false,

@@ -1,8 +1,8 @@
-# wacrm — CRM Template for WhatsApp
+# Balkania WA CRM
 
-> Self-hostable CRM template for WhatsApp® — shared inbox, contacts,
-> sales pipelines, broadcasts, and no-code automations. Fork it, brand
-> it, host it.
+> WhatsApp CRM — shared inbox, contacts, sales pipelines, broadcasts,
+> and no-code automations. Built on Next.js + Supabase, deployed on
+> Vercel.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](./LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org)
@@ -84,7 +84,7 @@ Open <http://localhost:3000>. You'll be redirected to `/login` (or
 
 ## 🚀 Deploy on Vercel (recommended)
 
-**wacrm runs on [Vercel](https://vercel.com) with a
+**Balkania WA CRM runs on [Vercel](https://vercel.com) with a
 [Supabase](https://supabase.com) database.** Push your fork to a
 GitHub account that has the Vercel app installed, import it as a new
 project, and Vercel builds and ships it on every push to `main` — no
@@ -116,7 +116,7 @@ VPS and no Kubernetes cluster to own.
 
 Full walkthrough: **[docs/deployment-vercel.md](./docs/deployment-vercel.md)**.
 
-> _Note: wacrm is MIT-licensed and runs anywhere Node.js 20+ does
+> _Note: this app is MIT-licensed and runs anywhere Node.js 20+ does
 > (`npm run build && npm run start`) — Railway, Fly.io, a VPS, your
 > own hardware. Vercel is recommended, not required._
 

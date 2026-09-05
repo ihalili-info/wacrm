@@ -18,6 +18,9 @@ tested-against path.
 
 ### Changed
 
+- **Renamed to "Balkania WA CRM"** — sidebar wordmark, browser tab
+  title (`%s — Balkania WA CRM`), `applicationName`, meta description,
+  README, and the npm package name (`balkania-wa-crm`).
 - **Self-service signup is disabled; accounts are provisioned by an
   admin.** Supabase Auth has "Allow new users to sign up" turned off,
   and the app follows suit: `/signup` redirects to `/login` (via
