@@ -89,7 +89,7 @@ function LoginPageInner() {
               alt="Balkania"
               width={48}
               height={48}
-              className="mb-2 h-12 w-12 rounded-xl"
+              className="mb-2 h-12 w-12"
             />
           )}
           <CardTitle className="text-xl text-foreground">

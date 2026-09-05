@@ -213,7 +213,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               alt="Balkania"
               width={32}
               height={32}
-              className="h-8 w-8 shrink-0 rounded-lg"
+              className="h-8 w-8 shrink-0"
             />
             <span className="text-sm font-semibold text-foreground">
               {t("title")}
