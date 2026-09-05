@@ -42,6 +42,18 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  // Self-service signup is disabled — accounts are provisioned by an
+  // admin in Supabase Auth, then granted a role via an invite link.
+  // Bounce every /signup hit to /login, carrying any ?invite token so
+  // an invited user still lands on the accept flow after signing in.
+  if (request.nextUrl.pathname === '/signup') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    const invite = request.nextUrl.searchParams.get('invite')
+    url.search = invite ? `?invite=${encodeURIComponent(invite)}` : ''
+    return withRefreshedCookies(NextResponse.redirect(url))
+  }
+
   // Auth pages - redirect to dashboard if already logged in.
   // Exception: when an invite token is in the query string we
   // send the already-signed-in user to /join/<token> instead so
@@ -50,16 +62,11 @@ export async function middleware(request: NextRequest) {
   // would silently drop them on /dashboard.
   if (user && (
     request.nextUrl.pathname === '/login' ||
-    request.nextUrl.pathname === '/signup' ||
     request.nextUrl.pathname === '/forgot-password'
   )) {
     const url = request.nextUrl.clone()
     const inviteToken = request.nextUrl.searchParams.get('invite')
-    if (
-      inviteToken &&
-      (request.nextUrl.pathname === '/login' ||
-        request.nextUrl.pathname === '/signup')
-    ) {
+    if (inviteToken && request.nextUrl.pathname === '/login') {
       url.pathname = `/join/${encodeURIComponent(inviteToken)}`
       url.search = ''
     } else {

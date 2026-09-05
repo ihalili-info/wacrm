@@ -98,6 +98,30 @@ describe("middleware — refreshed auth cookies survive redirects", () => {
     expect(res.cookies.get(ROTATED.name)?.value).toBe(ROTATED.value);
   });
 
+  it("redirects /signup to /login (self-service signup disabled)", async () => {
+    mockUser = null;
+    refreshedCookies = [{ ...ROTATED, value: "cleared" }];
+
+    const res = await middleware(new NextRequest("https://app.test/signup"));
+
+    expect(res.status).toBe(307);
+    const loc = res.headers.get("location")!;
+    expect(loc).toContain("/login");
+    expect(loc).not.toContain("invite");
+    expect(res.cookies.get(ROTATED.name)?.value).toBe("cleared");
+  });
+
+  it("redirects /signup?invite=… to /login?invite=… so the accept flow survives", async () => {
+    mockUser = null;
+
+    const res = await middleware(
+      new NextRequest("https://app.test/signup?invite=abc123"),
+    );
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("/login?invite=abc123");
+  });
+
   it("passes through (no redirect) for a signed-in user on a protected page", async () => {
     mockUser = { id: "user-1" };
     refreshedCookies = [ROTATED];

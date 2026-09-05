@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, type ReactNode } from 'react';
+import { Suspense, useEffect, useMemo, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -20,6 +20,8 @@ import { MembersTab } from '@/components/settings/members-tab';
 import { ApiKeysSettings } from '@/components/settings/api-keys-settings';
 import {
   resolveSection,
+  sectionAllowedForRole,
+  RESTRICTED_FALLBACK_SECTION,
   type SettingsSection,
 } from '@/components/settings/settings-sections';
 
@@ -42,7 +44,7 @@ export default function SettingsPage() {
 function SettingsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { defaultCurrency } = useAuth();
+  const { defaultCurrency, canEditSettings, profileLoading } = useAuth();
   const { mode } = useTheme();
   const t = useTranslations('Settings');
 
@@ -50,7 +52,25 @@ function SettingsPageInner() {
   // section — deep-linkable, and it keeps the existing links in the
   // app sidebar/header working. Legacy tab values (tags, custom-fields)
   // resolve onto their new home; unknown/empty → the Overview landing.
-  const section = resolveSection(searchParams.get('tab'));
+  const rawSection = resolveSection(searchParams.get('tab'));
+  // Agents / viewers only get the personal "Account" sections. The
+  // account-wide Overview and every Workspace section collapse to
+  // "Your profile". `sidebar` / `dashboard-shell` hide the nav entry
+  // for them; this handles a typed URL or a stale deep link. Fail
+  // closed while the role is still loading.
+  const canEdit = !profileLoading && canEditSettings;
+  const allowed = sectionAllowedForRole(rawSection, canEdit);
+  const section: SettingsSection = allowed
+    ? rawSection
+    : RESTRICTED_FALLBACK_SECTION;
+
+  useEffect(() => {
+    if (!allowed) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('tab', RESTRICTED_FALLBACK_SECTION);
+      router.replace(`/settings?${params.toString()}`, { scroll: false });
+    }
+  }, [allowed, router, searchParams]);
 
   const go = (next: SettingsSection) => {
     const params = new URLSearchParams(searchParams.toString());

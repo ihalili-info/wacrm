@@ -245,45 +245,27 @@ export default function JoinPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {/* For server_error the failure is transient — the network
-              flapped or the peek endpoint hiccupped. Try-again is
-              the right primary action; the "create account" /
-              "sign in" links stay as secondary options. Other
-              failure reasons (not_found / used / expired) are
-              terminal for this token, so no retry — just the
-              signup/sign-in escape hatches. */}
+              flapped or the peek endpoint hiccupped. Try-again is the
+              right primary action. Other reasons (not_found / used /
+              expired) are terminal for this token — the only way
+              forward is to sign in (self-service signup is disabled;
+              an admin provisions the account). */}
           {peek.reason === 'server_error' ? (
-            <>
-              <Button
-                onClick={loadPeekAndAuth}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Try again
-              </Button>
-              <Link href="/signup">
-                <Button
-                  variant="outline"
-                  className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  Create a new account instead
-                </Button>
-              </Link>
-            </>
+            <Button
+              onClick={loadPeekAndAuth}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Try again
+            </Button>
           ) : (
-            <>
-              <Link href="/signup">
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  Create a new account instead
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button
-                  variant="outline"
-                  className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  Sign in
-                </Button>
-              </Link>
-            </>
+            <Link href="/login">
+              <Button
+                variant="outline"
+                className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                Back to sign in
+              </Button>
+            </Link>
           )}
         </CardContent>
       </Card>
@@ -407,22 +389,21 @@ export default function JoinPage() {
     );
   }
 
-  // ----- Not authed: prompt to sign up or sign in -----
+  // ----- Not authed: sign in to accept -----
+  // Self-service signup is disabled — the invited person's account is
+  // created by an admin in Supabase Auth. They sign in here and the
+  // invite grants their role on this account.
   return (
     <Card className="w-full max-w-md border-border bg-card">
       {inviteHeader}
       <CardContent className="flex flex-col gap-2">
-        <Link href={`/signup?invite=${encodeURIComponent(token!)}`}>
-          <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-            Create account &amp; join
-          </Button>
-        </Link>
+        <p className="text-center text-sm text-muted-foreground">
+          Sign in with the account your administrator set up to accept
+          this invitation.
+        </p>
         <Link href={`/login?invite=${encodeURIComponent(token!)}`}>
-          <Button
-            variant="outline"
-            className="w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            I already have an account
+          <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+            Sign in to accept
           </Button>
         </Link>
       </CardContent>

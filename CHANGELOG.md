@@ -18,6 +18,22 @@ tested-against path.
 
 ### Changed
 
+- **Self-service signup is disabled; accounts are provisioned by an
+  admin.** Supabase Auth has "Allow new users to sign up" turned off,
+  and the app follows suit: `/signup` redirects to `/login` (via
+  middleware + the page itself), the "Create account" link is gone,
+  and the invite page (`/join/<token>`) now only offers "Sign in to
+  accept" — an admin creates the user in Supabase Auth first, then the
+  invite grants their role. The i18n keys `LoginPage.noAccount` /
+  `LoginPage.createAccount` are removed.
+- **Agents and viewers see the operational subset only.** The sidebar
+  hides **Automations**, **Flows**, **AI Agents** and **Settings** for
+  anyone below `admin`; `dashboard-shell` bounces those routes to
+  `/dashboard` on a direct hit; and `/settings` keeps only the
+  personal "Account" sections (profile, password, appearance) open to
+  agents/viewers — every "Workspace" section and the account Overview
+  are admin-only. Owners/admins are unaffected. (API routes already
+  enforced `requireRole` server-side; this aligns the UI.)
 - **Rebranded to Balkania.** New default accent theme "Balkania"
   (crimson-pink `#eb0045` primary, Balkania-navy chrome), default
   colour mode is now **light**, and the type stack is **Syne**

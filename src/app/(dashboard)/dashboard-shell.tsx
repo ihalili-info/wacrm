@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -12,9 +12,19 @@ import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 // itself can stay a server component and export metadata (noindex) —
 // client components can't export Next's metadata object.
 
+// Sections reserved for owners/admins (`canEditSettings`). Agents and
+// viewers who navigate here directly get bounced to /dashboard. The
+// sidebar hides these already; this is the deep-link / typed-URL guard.
+// `/settings` is not listed — the settings page itself keeps the
+// personal tabs (profile, security, appearance) open to every role and
+// restricts only the workspace sections.
+const ADMIN_ONLY_PREFIXES = ["/automations", "/flows", "/agents"];
+
 function DashboardShellInner({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, profileLoading, accountRole, canEditSettings } =
+    useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Sidebar drawer state — only used on mobile. On lg+ the sidebar is
   // always visible and this stays at `false` (ignored by the component).
@@ -26,6 +36,26 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  // Role-gate the admin-only sections. Wait for the role to resolve
+  // (`profileLoading`) so we don't bounce an admin mid-load.
+  useEffect(() => {
+    if (loading || profileLoading || !user || !accountRole) return;
+    const restricted = ADMIN_ONLY_PREFIXES.some(
+      (p) => pathname === p || pathname.startsWith(p + "/"),
+    );
+    if (restricted && !canEditSettings) {
+      router.replace("/dashboard");
+    }
+  }, [
+    pathname,
+    loading,
+    profileLoading,
+    user,
+    accountRole,
+    canEditSettings,
+    router,
+  ]);
 
   if (loading) {
     return (
