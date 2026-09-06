@@ -16,6 +16,19 @@ database provisioned through Vercel's native **Supabase** integration.
 The app already ran on Vercel; this makes it the documented,
 tested-against path.
 
+### Added
+
+- **Settings → Team members → "Add member"** — creates the teammate's
+  Supabase Auth login *and* attaches it to the account with the chosen
+  role in one step, then shows the email + generated password once for
+  hand-off. This is the flow that actually works when self-service
+  signup is disabled: an invite link can only grant a role to a login
+  that already exists, so a brand-new teammate previously had no way
+  in. "Invite member" is still there (now secondary) for people who
+  already have a login. No email is sent — this project has no custom
+  SMTP and Supabase's built-in sender is capped at 2 mails/hour.
+  New `POST /api/account/members` (owner/admin, rate-limited).
+
 ### Changed
 
 - **Renamed to "Balkania WA CRM"** — sidebar wordmark, browser tab

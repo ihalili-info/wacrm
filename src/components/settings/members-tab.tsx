@@ -73,6 +73,7 @@ import {
   PresenceDot,
 } from '@/components/presence/presence-dot';
 import { InviteMemberDialog } from './invite-member-dialog';
+import { AddMemberDialog } from './add-member-dialog';
 import { SettingsPanelHead } from './settings-panel-head';
 import { ROLE_META } from './role-meta';
 
@@ -135,6 +136,7 @@ export function MembersTab() {
   const [loading, setLoading] = useState(true);
 
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [removingMember, setRemovingMember] = useState<Member | null>(null);
   const [pendingMemberAction, setPendingMemberAction] = useState<string | null>(
     null,
@@ -287,10 +289,23 @@ export function MembersTab() {
         description={t('description')}
         action={
           <RequireRole min="admin">
-            <Button onClick={() => setInviteOpen(true)}>
-              <Plus className="size-4" />
-              {t('inviteMember')}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {/* "Add member" is primary: self-service signup is off on
+                  this deployment, so an invite link only works for
+                  someone who ALREADY has a login. Creating the login
+                  here is the path that works for a brand-new teammate. */}
+              <Button onClick={() => setAddOpen(true)}>
+                <Plus className="size-4" />
+                Add member
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setInviteOpen(true)}
+                className="border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                {t('inviteMember')}
+              </Button>
+            </div>
           </RequireRole>
         }
       />
@@ -559,6 +574,12 @@ export function MembersTab() {
           )}
         </div>
       </RequireRole>
+
+      <AddMemberDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onCreated={loadEverything}
+      />
 
       <InviteMemberDialog
         open={inviteOpen}
