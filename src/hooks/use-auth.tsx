@@ -26,7 +26,12 @@ interface Profile {
   full_name: string | null;
   email: string;
   avatar_url: string | null;
-  role: string | null;
+  /*
+   * The legacy `profiles.role` TEXT column (migration 001) is
+   * deliberately absent — it always reads its DEFAULT of 'user' and
+   * is superseded by `account_role` below. Keeping it off the type
+   * (and out of the select) is what stops it being displayed again.
+   */
   /**
    * Opted-in beta feature keys for this account. No current feature
    * reads this — Flows was the last user and went to soft-GA in PR
@@ -148,7 +153,6 @@ interface ProfileRow {
   full_name: string | null;
   email: string;
   avatar_url: string | null;
-  role: string | null;
   beta_features: string[] | null;
   account_id: string | null;
   account_role: string | null;
@@ -192,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const result = await supabase
           .from("profiles")
           .select(
-            "id, full_name, email, avatar_url, role, beta_features, account_id, account_role",
+            "id, full_name, email, avatar_url, beta_features, account_id, account_role",
           )
           .eq("user_id", userId)
           .maybeSingle();
@@ -272,7 +276,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           full_name: data.full_name,
           email: data.email,
           avatar_url: data.avatar_url,
-          role: data.role,
+          // `data.role` (legacy migration-001 TEXT column) is intentionally
+          // not carried onto the Profile — `account_role` below is the role.
           // `beta_features` is `NOT NULL DEFAULT ARRAY[]` in the DB, but
           // narrow defensively in case the column hasn't been migrated yet
           // (older deployments running 011 lazily) — `null` reads as no

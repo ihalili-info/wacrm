@@ -16,14 +16,14 @@ export interface Profile {
   full_name: string;
   email: string;
   avatar_url?: string;
-  /**
-   * Legacy free-form role column from migration 001. Never read
-   * by the app since 017_account_sharing.sql introduced the typed
-   * `account_role` enum. Flagged for removal in a later cleanup
-   * migration — kept on the type so existing destructures don't
-   * break.
+  /*
+   * NOTE: the legacy free-form `profiles.role` TEXT column from
+   * migration 001 is deliberately NOT on this type. It always reads
+   * its DEFAULT of 'user' and is superseded by the `account_role`
+   * enum below (017_account_sharing.sql). Leaving it off the type is
+   * what stops it being surfaced again — it previously leaked into
+   * Settings → Your profile and displayed owners as "user".
    */
-  role: string;
   /**
    * Opted-in beta feature keys for this account. The column survives
    * for future beta gates; no current feature reads it (Flows was
