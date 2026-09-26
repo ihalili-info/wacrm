@@ -35,7 +35,11 @@ describe('registerPhoneNumber', () => {
       accessToken: 'tok',
       pin: '123456',
     });
-    expect(result).toEqual({ success: true, alreadyRegistered: false });
+    expect(result).toEqual({
+      success: true,
+      alreadyRegistered: false,
+      notApplicableForSmb: false,
+    });
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain('/PNID_123/register');
     expect(init.method).toBe('POST');
@@ -64,7 +68,11 @@ describe('registerPhoneNumber', () => {
       accessToken: 'tok',
       pin: '123456',
     });
-    expect(result).toEqual({ success: true, alreadyRegistered: true });
+    expect(result).toEqual({
+      success: true,
+      alreadyRegistered: true,
+      notApplicableForSmb: false,
+    });
   });
 
   it("surfaces Meta's PIN-required error verbatim so the UI can show it", async () => {
@@ -178,5 +186,66 @@ describe('getSubscribedApps', () => {
     await expect(
       getSubscribedApps({ wabaId: 'WABA_1', accessToken: 'tok' }),
     ).rejects.toThrow(/Invalid OAuth token/);
+  });
+});
+
+describe('registerPhoneNumber — SMB / Business-App track', () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    fetchMock = vi.fn().mockResolvedValue(okResponse({ success: true }));
+    vi.stubGlobal('fetch', fetchMock);
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('treats "not available for SMB businesses" as success, not a failure', async () => {
+    // Numbers onboarded via Coexistence / Embedded Signup are
+    // registered by Meta itself and /register is blocked for them
+    // outright. Throwing here left those accounts pinned to a
+    // "Not registered — Meta will not deliver events" banner they
+    // could never clear, hunting a two-step PIN that does not exist
+    // for their number. Delivery for them rides on the WABA
+    // subscription instead, which the config route always performs.
+    fetchMock.mockResolvedValueOnce(
+      errorResponse(400, {
+        error: {
+          message: 'Register endpoint is not available for SMB businesses.',
+          code: 100,
+        },
+      }),
+    );
+
+    const result = await registerPhoneNumber({
+      phoneNumberId: '1362252480305139',
+      accessToken: 'tok',
+      pin: '820461',
+    });
+
+    expect(result).toEqual({
+      success: true,
+      alreadyRegistered: true,
+      notApplicableForSmb: true,
+    });
+  });
+
+  it('still throws on a genuine registration failure', async () => {
+    // Guard the guard: the SMB branch must not swallow real errors.
+    fetchMock.mockResolvedValueOnce(
+      errorResponse(400, {
+        error: {
+          message: 'Two-step verification PIN is incorrect.',
+          code: 133006,
+        },
+      }),
+    );
+
+    await expect(
+      registerPhoneNumber({
+        phoneNumberId: '1362252480305139',
+        accessToken: 'tok',
+        pin: '000000',
+      }),
+    ).rejects.toThrow(/PIN is incorrect/);
   });
 });

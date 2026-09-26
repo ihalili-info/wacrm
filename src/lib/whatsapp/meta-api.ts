@@ -110,6 +110,22 @@ export interface RegisterPhoneNumberResult {
    * caller's POV, surfaced separately for logging clarity.
    */
   alreadyRegistered: boolean
+  /**
+   * True when Meta refused the call with "Register endpoint is not
+   * available for SMB businesses".
+   *
+   * Numbers onboarded on the SMB / WhatsApp-Business-App track
+   * (Coexistence, Embedded Signup) are registered by Meta during
+   * onboarding, and `/register` is blocked for them outright — there
+   * is no two-step PIN to set, and WhatsApp Manager shows no
+   * Two-step verification section at all. So this is not a failure:
+   * there is nothing left to do for the number itself.
+   *
+   * For these numbers, inbound delivery depends purely on the WABA
+   * being subscribed to the app (POST /{waba_id}/subscribed_apps),
+   * which the config route calls on every save.
+   */
+  notApplicableForSmb: boolean
 }
 
 /**
@@ -135,7 +151,11 @@ export async function registerPhoneNumber(
   })
 
   if (response.ok) {
-    return { success: true, alreadyRegistered: false }
+    return {
+      success: true,
+      alreadyRegistered: false,
+      notApplicableForSmb: false,
+    }
   }
 
   // Meta returns an error envelope with a code. Code 133005 + the
@@ -150,7 +170,23 @@ export async function registerPhoneNumber(
   }
   const message = data.error?.message ?? `Meta API error: ${response.status}`
   if (/already.*registered/i.test(message)) {
-    return { success: true, alreadyRegistered: true }
+    return {
+      success: true,
+      alreadyRegistered: true,
+      notApplicableForSmb: false,
+    }
+  }
+  // SMB / Business-App-track numbers: Meta registered them at
+  // onboarding and blocks this endpoint. Treating it as an error left
+  // those accounts permanently stuck on a "Not registered — Meta will
+  // not deliver events" banner they could never clear, chasing a
+  // two-step PIN that does not exist for them.
+  if (/not available for SMB/i.test(message)) {
+    return {
+      success: true,
+      alreadyRegistered: true,
+      notApplicableForSmb: true,
+    }
   }
   throw new Error(message)
 }
