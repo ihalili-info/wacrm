@@ -1,7 +1,8 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, type ReactNode } from 'react';
+import { Suspense, useMemo, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -53,24 +54,32 @@ function SettingsPageInner() {
   // app sidebar/header working. Legacy tab values (tags, custom-fields)
   // resolve onto their new home; unknown/empty → the Overview landing.
   const rawSection = resolveSection(searchParams.get('tab'));
-  // Agents / viewers only get the personal "Account" sections. The
-  // account-wide Overview and every Workspace section collapse to
+
+  // Agents / viewers only get the personal "Account" sections; the
+  // account-wide Overview and every Workspace section fall back to
   // "Your profile". `sidebar` / `dashboard-shell` hide the nav entry
-  // for them; this handles a typed URL or a stale deep link. Fail
-  // closed while the role is still loading.
-  const canEdit = !profileLoading && canEditSettings;
-  const allowed = sectionAllowedForRole(rawSection, canEdit);
+  // for them, so this only has to cover a typed URL or a stale link.
+  //
+  // This clamps which PANEL renders and deliberately does not rewrite
+  // the URL. An earlier version redirected with `router.replace` from
+  // an effect and broke the rail completely: `canEditSettings` is
+  // false while `profileLoading` is still true, so every fresh load
+  // of /settings bounced to ?tab=profile — and because
+  // `useSearchParams()` returns a new object each render, the effect
+  // re-ran and re-issued the redirect, fighting each click the user
+  // made. Clamping the panel gives the same protection with no
+  // navigation to race.
+  const allowed = sectionAllowedForRole(rawSection, canEditSettings);
   const section: SettingsSection = allowed
     ? rawSection
     : RESTRICTED_FALLBACK_SECTION;
 
-  useEffect(() => {
-    if (!allowed) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('tab', RESTRICTED_FALLBACK_SECTION);
-      router.replace(`/settings?${params.toString()}`, { scroll: false });
-    }
-  }, [allowed, router, searchParams]);
+  // Until the role resolves, `canEditSettings` is false for everyone,
+  // so a legitimate admin's deep link would flash the profile panel
+  // before settling. Hold a spinner for that window instead — it fails
+  // closed (no admin content shown to an unresolved role) without
+  // showing the wrong panel.
+  const awaitingRole = profileLoading && !allowed;
 
   const go = (next: SettingsSection) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -116,7 +125,15 @@ function SettingsPageInner() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
         <SettingsRail active={section} onSelect={go} hints={hints} />
-        <div className="min-w-0">{panel[section]}</div>
+        <div className="min-w-0">
+          {awaitingRole ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="size-6 animate-spin text-primary" />
+            </div>
+          ) : (
+            panel[section]
+          )}
+        </div>
       </div>
     </div>
   );
