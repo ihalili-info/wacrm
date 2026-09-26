@@ -1,6 +1,11 @@
 import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { decrypt, encrypt, isLegacyFormat } from "./encryption";
+import {
+  decrypt,
+  describeEncryptionKeyProblem,
+  encrypt,
+  isLegacyFormat,
+} from "./encryption";
 
 const KEY_HEX = process.env.ENCRYPTION_KEY!;
 
@@ -123,3 +128,60 @@ describe("encryption", () => {
     });
   });
 });
+
+describe('describeEncryptionKeyProblem', () => {
+  const VALID = 'a'.repeat(64)
+
+  it('accepts a well-formed 64-char hex key', () => {
+    expect(describeEncryptionKeyProblem(VALID)).toBeNull()
+    expect(
+      describeEncryptionKeyProblem('AbCdEf0123456789'.repeat(4)),
+    ).toBeNull()
+  })
+
+  it('reports a missing key', () => {
+    expect(describeEncryptionKeyProblem('')).toMatch(/not set/i)
+  })
+
+  it('falls back to process.env when called with no argument', () => {
+    // The no-arg form is what `encrypt()`'s caller in the API route
+    // uses, so the default must actually read the environment.
+    const saved = process.env.ENCRYPTION_KEY
+    try {
+      delete process.env.ENCRYPTION_KEY
+      expect(describeEncryptionKeyProblem()).toMatch(/not set/i)
+      process.env.ENCRYPTION_KEY = 'a'.repeat(64)
+      expect(describeEncryptionKeyProblem()).toBeNull()
+    } finally {
+      process.env.ENCRYPTION_KEY = saved
+    }
+  })
+
+  it('reports stray whitespace, the commonest paste error', () => {
+    for (const v of [`${VALID}\n`, ` ${VALID}`, `${VALID} `]) {
+      expect(describeEncryptionKeyProblem(v)).toMatch(/whitespace/i)
+    }
+  })
+
+  it('reports an 0x prefix', () => {
+    expect(describeEncryptionKeyProblem(`0x${'a'.repeat(62)}`)).toMatch(/0x/)
+  })
+
+  it('reports a non-hex character and its position', () => {
+    // 'z' at index 9 → reported 1-based as 10.
+    const bad = `${'a'.repeat(9)}z${'a'.repeat(54)}`
+    expect(describeEncryptionKeyProblem(bad)).toMatch(/position 10/)
+  })
+
+  it('reports a wrong length with both counts', () => {
+    const msg = describeEncryptionKeyProblem('a'.repeat(32))!
+    expect(msg).toMatch(/32 hex characters/)
+    expect(msg).toMatch(/64 characters/)
+  })
+
+  it('never echoes the key itself', () => {
+    const secret = 'deadbeef'.repeat(4) // 32 chars — wrong length
+    expect(describeEncryptionKeyProblem(secret)).not.toContain(secret)
+    expect(describeEncryptionKeyProblem(`${VALID}\n`)).not.toContain(VALID)
+  })
+})

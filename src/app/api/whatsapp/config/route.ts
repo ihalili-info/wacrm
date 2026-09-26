@@ -6,7 +6,11 @@ import {
   subscribeWabaToApp,
   verifyPhoneNumber,
 } from '@/lib/whatsapp/meta-api'
-import { encrypt, decrypt } from '@/lib/whatsapp/encryption'
+import {
+  encrypt,
+  decrypt,
+  describeEncryptionKeyProblem,
+} from '@/lib/whatsapp/encryption'
 
 /**
  * Resolve the caller's account_id from their profile. Inlined here
@@ -260,10 +264,19 @@ export async function POST(request: Request) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown encryption error'
       console.error('Encryption failed:', message)
+      // `encrypt()` pre-validates ENCRYPTION_KEY and throws a message
+      // naming the actual defect (wrong length, stray whitespace, a
+      // non-hex character and where). Surface that verbatim — the old
+      // generic "check it's 64 hex chars" left operators guessing
+      // between a trailing newline and a 32-character key, which both
+      // surfaced as crypto's opaque "Invalid key length". The message
+      // reports counts and positions only, never the key itself.
+      const problem = describeEncryptionKeyProblem()
       return NextResponse.json(
         {
-          error:
-            'Failed to encrypt token. Check that ENCRYPTION_KEY is a valid 64-character hex string in your environment variables.',
+          error: problem
+            ? `Failed to encrypt token. ${problem}`
+            : `Failed to encrypt token: ${message}`,
         },
         { status: 500 }
       )

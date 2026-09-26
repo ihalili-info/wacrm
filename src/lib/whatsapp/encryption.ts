@@ -34,7 +34,70 @@ const GCM_IV_LENGTH = 12
 const CBC_IV_LENGTH = 16
 const AUTH_TAG_LENGTH = 16
 
+/** AES-256 needs a 32-byte key, i.e. exactly 64 hex characters. */
+const REQUIRED_KEY_BYTES = 32
+const REQUIRED_KEY_CHARS = REQUIRED_KEY_BYTES * 2
+
+/**
+ * Explain what is wrong with `ENCRYPTION_KEY`, without ever revealing
+ * it.
+ *
+ * Why this exists: `Buffer.from(value, 'hex')` does not throw on bad
+ * input — it stops at the first character that isn't a hex digit and
+ * silently returns a short buffer. `createCipheriv` then fails with a
+ * bare "Invalid key length", which tells an operator nothing about
+ * *why*: a trailing newline from a copy-paste, a `0x` prefix, a
+ * base64 value, or simply a 32-character key all produce the exact
+ * same message. Diagnosing it meant guessing.
+ *
+ * Returns `null` when the key is usable. Otherwise a message naming
+ * the observed character count and decoded byte count — enough to
+ * identify the mistake, never enough to reconstruct the key.
+ */
+export function describeEncryptionKeyProblem(
+  value: string | undefined = process.env.ENCRYPTION_KEY,
+): string | null {
+  if (value === undefined || value === '') {
+    return 'ENCRYPTION_KEY is not set in this environment.'
+  }
+
+  // Compare against the raw value so whitespace is reported, not
+  // quietly tolerated — a trailing newline is the single most common
+  // cause and the operator needs to be told it is there.
+  const trimmed = value.trim()
+  if (trimmed !== value) {
+    return `ENCRYPTION_KEY has leading or trailing whitespace (${value.length} characters, ${trimmed.length} after trimming). Re-paste it without the stray space or newline.`
+  }
+
+  if (/^0x/i.test(value)) {
+    return 'ENCRYPTION_KEY starts with "0x". Paste the bare hex digits, with no prefix.';
+  }
+
+  if (!/^[0-9a-fA-F]*$/.test(value)) {
+    const firstBad = value.split('').findIndex((c) => !/[0-9a-fA-F]/.test(c))
+    return `ENCRYPTION_KEY contains a non-hex character at position ${firstBad + 1} (expected only 0-9 and a-f). A base64 or passphrase value will not work — generate one with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+  }
+
+  if (value.length !== REQUIRED_KEY_CHARS) {
+    return `ENCRYPTION_KEY is ${value.length} hex characters (${Math.floor(value.length / 2)} bytes); AES-256 needs exactly ${REQUIRED_KEY_CHARS} characters (${REQUIRED_KEY_BYTES} bytes).`
+  }
+
+  const decoded = Buffer.from(value, 'hex')
+  if (decoded.length !== REQUIRED_KEY_BYTES) {
+    return `ENCRYPTION_KEY is ${value.length} characters but decodes to only ${decoded.length} bytes; AES-256 needs ${REQUIRED_KEY_BYTES}.`
+  }
+
+  return null
+}
+
 export function encrypt(text: string): string {
+  // Validate the exact value this function is about to use (the
+  // module-level capture), so the diagnosis can never describe a
+  // different value than the one that fails. Fails with the precise
+  // reason rather than crypto's opaque "Invalid key length".
+  const problem = describeEncryptionKeyProblem(ENCRYPTION_KEY)
+  if (problem) throw new Error(problem)
+
   const iv = crypto.randomBytes(GCM_IV_LENGTH)
   const cipher = crypto.createCipheriv(
     'aes-256-gcm',
